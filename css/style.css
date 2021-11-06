@@ -52,7 +52,7 @@ body {
     font-family: 'Poppins', sans-serif;
 }
 
-body::-webkit-scrollbar{
+body::-webkit-scrollbar {
     display: none;
 }
 
@@ -236,7 +236,7 @@ button {
 .header_section {
     width: 100%;
     float: left;
-    background-image: url(../images/banner-bg.png);
+    background-image: url(../images/banner-bg.webp);
     height: auto;
     background-size: 100%;
     padding: 0px 0px 20px 0px;
@@ -446,6 +446,7 @@ button {
     width: 170px;
     margin: 0 auto;
     text-align: center;
+    z-index: 100;
 }
 
 .btn_main a {
@@ -549,7 +550,7 @@ button {
 .blog_section {
     width: 100%;
     float: left;
-    background-image: url(../images/blog-bg.png);
+    background-image: url(../images/blog-bg.webp);
     height: auto;
     background-repeat: no-repeat;
     background-size: 100%;
@@ -616,9 +617,11 @@ button {
     }
 }
 
-.margin_top_90{
+.margin_top_90 {
     margin-top: 90px;
 }
+
+
 /* blog section end */
 
 
@@ -832,6 +835,7 @@ button {
 
 /* choose section end */
 
+
 /* contact section start */
 
 .contact_section {
@@ -839,6 +843,7 @@ button {
     float: left;
     padding-bottom: 90px;
 }
+
 .contact_taital {
     width: 100%;
     float: left;
@@ -847,12 +852,14 @@ button {
     text-align: center;
     font-weight: bold;
 }
+
 .email_text {
     width: 70%;
     margin: 0 auto;
     text-align: center;
     padding-top: 120px;
 }
+
 .email-bt {
     width: 100%;
     float: left;
@@ -864,6 +871,7 @@ button {
     border: 0px;
     border: 1px solid #238636 !important;
 }
+
 .massage-bt {
     width: 100%;
     float: left;
@@ -875,11 +883,13 @@ button {
     border: 0px;
     border: 1px solid #238636 !important;
 }
+
 .send_btn {
     width: 170px;
     margin: 0 auto;
     text-align: center;
 }
+
 .send_btn a {
     width: 100%;
     float: right;
@@ -890,12 +900,14 @@ button {
     background-color: #238636;
     padding: 7px;
 }
+
 .send_btn a:hover {
     color: #f0f6fc;
     background-color: #238636;
 }
-/* contact section end */
 
+
+/* contact section end */
 
 
 /* footer section start */
@@ -903,7 +915,7 @@ button {
 .footer_section {
     width: 100%;
     float: left;
-    background-image: url(../images/footer-bg.png);
+    background-image: url(../images/footer-bg.webp);
     height: auto;
     padding-top: 250px;
     background-size: 100% 100%;

@@ -600,6 +600,7 @@ pre code {
   flex-wrap: wrap;
   margin-right: -15px;
   margin-left: -15px;
+  row-gap:20px;
 }
 
 .no-gutters {

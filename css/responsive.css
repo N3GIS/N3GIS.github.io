@@ -288,7 +288,7 @@
         display: none;
     }
     .header_section {
-        background-image: url(../images/mobile-bg.png);
+        background-image: url(../images/mobile-bg.webp);
         background-size: cover;
         padding: 0px;
     }
@@ -374,7 +374,7 @@
         padding-right: 15px;
     }
     .blog_section {
-        background-image: url(../images/blog-mobile-bg.png);
+        background-image: url(../images/blog-mobile-bg.webp);
         background-size: cover;
         padding: 50px 0px;
     }
@@ -487,9 +487,9 @@
         display: none;
     }
     .header_section {
-        background-image: url(../images/mobile-bg.png);
+        background-image: url(../images/mobile-bg.webp);
         background-size: cover;
-        padding: 0px; 
+        padding: 0px;
     }
     .navbar-toggler {
         background-color: #ffffff;
@@ -572,7 +572,7 @@
         padding-right: 15px;
     }
     .blog_section {
-        background-image: url(../images/blog-mobile-bg.png);
+        background-image: url(../images/blog-mobile-bg.webp);
         background-size: cover;
         padding: 50px 0px;
     }
@@ -629,7 +629,7 @@
         margin: 0 auto;
     }
     .footer_section {
-        background-image: url(../images/footer-mobile-bg.png);
+        background-image: url(../images/footer-mobile-bg.webp);
         background-size: cover;
         padding: 50px 0px;
     }
@@ -665,5 +665,4 @@
         width: 100%;
         padding-top: 90px;
     }
-
 }

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Export To Babylon.js</title>
+    <style>
+        html,
+        body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+
+    <script src="js/jquery-1.9.0.js"></script>
+
+    <script src="js/pako.js"></script>
+    <script src="js/Stats.js"></script>
+
+    <script src="js/babylon.js"></script>
+    <script src="js/babylon.gui.min.js"></script>
+
+    <script src="js/loadScene.js"></script>
+</head>
+
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        var modelsRoot = "Scenes/";
+        var sceneName = "RobotLab";
+        var canvas = document.getElementById("renderCanvas")
+
+        loadScene.createScene(modelsRoot, sceneName, canvas, function(scene) {
+            scene.executeWhenReady(() => {
+                scene.activeCamera.wheelPrecision = 1;
+                scene.activeCamera.panningSensibility = 10;
+                showDebugLayer(scene)
+            });
+
+
+            function showDebugLayer(scene) {
+                // GUI
+                var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+                var sv = new BABYLON.GUI.ScrollViewer();
+                sv.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+                sv.barSize = 10;
+                sv.width = "1280px";
+                sv.height = "155px";
+                sv.top = -10
+                sv.background = "#FFFFFF55";
+                sv.thickness = 0;
+                sv.barColor = "#409EFF";
+                sv.barBackground = "#ebeef555";
+                sv.barThickness = 0
+
+                advancedTexture.addControl(sv);
+
+                var gd = new BABYLON.GUI.Grid();
+                var columCount = 6;
+                gd.width = 250 * columCount + "px";
+                gd.height = "145px";
+                for (var i = 0; i < columCount; i++) {
+                    gd.addColumnDefinition(1 / columCount);
+                    var bt = BABYLON.GUI.Button.CreateImageOnlyButton(
+                        "but",
+                        "../../example/BabylonJS/Images/mimiMap_" + i + ".webp"
+                    );
+                    bt.thickness = 0;
+                    bt.width = "240px";
+                    bt.height = "135px";
+                    bt.hoverCursor = "pointer";
+                    bt.name = "bt_" + i;
+                    bt.onPointerClickObservable.add((val, bt) => {
+                        switch (bt.target.name) {
+                            case "bt_0":
+                                sceneName = "RobotLab";
+                                break;
+                            case "bt_1":
+                                sceneName = "ThreeDoneStealth";
+                                break;
+                            case "bt_2":
+                                sceneName = "Simple_The_Mill";
+                                break;
+                            case "bt_3":
+                                sceneName = "Demo_01";
+                                break;
+                            case "bt_4":
+                                sceneName = "Avp4 Mobile";
+                                break;
+                            case "bt_5":
+                                sceneName = "AeroEngine";
+                                break;
+                            default:
+                                sceneName = "AeroEngine";
+                                break;
+                        }
+                        scene.dispose();
+                        scene.getEngine().dispose();
+                        scene = null;
+
+                        loadScene.createScene(modelsRoot, sceneName, canvas, function(newScene) {
+                            newScene.executeWhenReady(() => {
+                                newScene.activeCamera.wheelPrecision = 1;
+                                newScene.activeCamera.panningSensibility = 10;
+                                showDebugLayer(newScene)
+                            });
+                        })
+                    });
+                    gd.addControl(bt, 0, i);
+                }
+                sv.addControl(gd);
+
+
+                var panel = new BABYLON.GUI.StackPanel();
+                panel.width = "200px";
+                panel.height = "35px";
+                panel.top = -160;
+                panel.isVertical = false;
+                panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+                panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+                advancedTexture.addControl(panel);
+
+                var checkbox = new BABYLON.GUI.Checkbox();
+                checkbox.width = "20px";
+                checkbox.height = "20px";
+                checkbox.isChecked = false;
+                checkbox.color = "#409EFF";
+                checkbox.onIsCheckedChangedObservable.add(function(value) {
+                    if (value) {
+                        scene.debugLayer.show();
+                    } else {
+                        scene.debugLayer.hide();
+                    }
+                });
+                panel.addControl(checkbox);
+
+                var header = new BABYLON.GUI.TextBlock();
+                header.text = " Show DebugLayer";
+                header.fontWeight = "bolder"
+                header.color = "#409EFF";
+                header.shadowOffsetX = 1
+                header.shadowOffsetY = 1
+                header.width = "180px";
+                header.marginLeft = "5px";
+                header.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+
+
+                var btLink = BABYLON.GUI.Button.CreateSimpleButton("but", "Export To Babylon.js");
+                btLink.width = "400px";
+                btLink.height = "50px";
+                btLink.textBlock.shadowOffsetX = 3
+                btLink.textBlock.shadowOffsetY = 3
+                btLink.fontSize = "28px";
+                btLink.fontWeight = "bolder"
+                btLink.color = "#409EFF";
+                btLink.thickness = 0;
+                btLink.hoverCursor = "pointer";
+                btLink.verticalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_TOP;
+                btLink.onPointerClickObservable.add(() => {
+                    window.open('https://assetstore.unity.com/packages/slug/201002');
+                })
+                advancedTexture.addControl(btLink);
+                panel.addControl(header);
+            }
+        });
+    </script>
+</body>
+
+</html>
