@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Export to Three.js</title>
+    <!-- <script type="text/javascript" src="js/three.js"></script>
+    <script type="text/javascript" src="js/controls/OrbitControls.js"></script> -->
+    <script type="text/javascript" src="./plugins/jquery-1.9.0.js"></script>
+    <!-- <script type="text/javascript" src="js/libs/jszip.js"></script>
+    <script type="text/javascript" src="js/libs/jszip-utils.js"></script>
+    <script type="text/javascript" src="js/libs/lzma.js"></script> -->
+    <script type="text/javascript" src="./plugins/gzip/pako.js"></script>
+
+
+    <style>
+        body {
+            margin: 0px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script id="fragment_ShaderDepth" type="x-shader/x-fragment">
+			#include <packing>
+			uniform sampler2D texture;
+			varying vec2 vUV;
+			void main() {
+				vec4 pixel = texture2D( texture, vUV );
+				if ( pixel.a < 0.5 ) discard;
+				gl_FragData[ 0 ] = packDepthToRGBA( gl_FragCoord.z );
+			}
+
+</script>
+
+    <script id="vertex_ShaderDepth" type="x-shader/x-vertex">
+			varying vec2 vUV;
+			void main() {
+				vUV = 1.0 * uv;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+				gl_Position = projectionMatrix * mvPosition;
+			}
+
+</script>
+
+    <script id="fragment_TerrainShader" type="x-shader/x-fragment">
+            uniform float scale;
+			uniform sampler2D texture1;
+			uniform sampler2D texture2;
+			uniform sampler2D texture3;
+			uniform sampler2D texture4;
+            uniform sampler2D texture5;
+            uniform sampler2D texture6;
+            uniform sampler2D texture7;
+
+			uniform sampler2D splatAlpha1;
+			uniform sampler2D splatAlpha2;
+			varying vec2 vUv;
+				void main( void ) {
+				vec3 lay1 = texture2D(texture1, scale * vUv).rgb;
+	            vec3 lay2 = texture2D(texture2, scale * vUv).rgb;
+	            vec3 lay3 = texture2D(texture3, scale * vUv).rgb;
+	            vec3 lay4 = texture2D(texture4, scale * vUv).rgb;
+                vec3 lay5 = texture2D(texture5, scale * vUv).rgb;
+                vec3 lay6 = texture2D(texture6, scale * vUv).rgb;
+                vec3 lay7 = texture2D(texture7, scale * vUv).rgb;
+
+				vec3 splat1 = texture2D(splatAlpha1, vUv).rgb;
+				vec3 splat2 = texture2D(splatAlpha2, vUv).rgb;
+
+				vec3 color = lay1 * splat1.r  + lay2 * splat1.g + lay3 * splat1.b + lay4 *(1.0-splat1.r)*(1.0-splat1.g)*(1.0-splat1.b)* (1.0 - splat2.r) + lay5 * splat2.r +  lay6 * splat2.g +  lay7 * splat2.b ;
+				color = color *1.35;
+				gl_FragColor = vec4( color , 0 );
+			}
+
+
+</script>
+
+    <script id="vertex_TerrainShader" type="x-shader/x-vertex">
+			varying vec2 vUv;
+			void main()
+			{
+				vUv = uv;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+				gl_Position = projectionMatrix * mvPosition;
+			}
+
+</script>
+
+    <div id="WebGL_Output"></div>
+    <script type="module">
+
+        import * as THREE from '../build/three.module.js';
+        import { OrbitControls } from './jsm/controls/OrbitControls.js';
+
+
+        var scene = new THREE.Scene();
+        var loader = new THREE.ObjectLoader();
+        var camera, renderer, controls;
+
+        var mixer;
+        var clock = new THREE.Clock();
+        var loadComplete = false;
+
+        var rootPath = "models/ThreeJS/Avp4 Mobile";
+
+        function start() {
+            var num = 0;
+            $.getJSON(rootPath + "/ExportPackageInfo.json", function (data) {
+                $.each(data, function (i, v) {
+                    var compressionType = v.compressionType;
+                    var url = rootPath + "/Models/" + v.name;
+                    switch (compressionType) {
+                        case "none":
+                            loader.load(url, function (obj) {
+                                console.log(obj)
+                                objLoad(obj);
+                            });
+                            break;
+                        case "gzip":
+                            var ajax = new XMLHttpRequest();
+                            ajax.open("GET", url, true);
+                            ajax.responseType = "arraybuffer";
+                            ajax.onload = function () {
+                                var buffer = new Uint8Array(ajax.response);
+                                var b64Data = new TextDecoder("utf-8").decode(buffer);
+                                b64Data = b64Data.slice(3, b64Data.length);
+                                var gzipString = ungzip(b64Data);
+                                loader.setResourcePath(rootPath + "/Textures/");
+                                loader.parse(JSON.parse(gzipString), function (obj) {
+                                    objLoad(obj);
+                                });
+                            };
+                            ajax.send();
+                            break;
+                        case "gzipOptimize":
+                            var ajax = new XMLHttpRequest();
+                            ajax.open("GET", url, true);
+                            ajax.responseType = "arraybuffer";
+                            ajax.onload = function () {
+                                var binData = new Uint8Array(ajax.response);
+                                binData = binData.slice(3, binData.length - 1);
+                                var data = pako.inflate(binData, {to: 'string'});
+                                loader.setResourcePath(rootPath + "/Textures/");
+                                loader.parse(JSON.parse(data), function (obj) {
+                                    objLoad(obj);
+                                });
+                            };
+                            ajax.onprogress = function (value) {
+                                //onSingleProgress(value);
+                            };
+                            ajax.send();
+                        break;
+                        case "zip":
+                            JSZipUtils.getBinaryContent(url, function (err, data) {
+                                if (err) {
+                                    throw err; // or handle err
+                                }
+                                var new_zip = new JSZip();
+                                new_zip.loadAsync(data).then(function (zip) {
+                                    var urlSplit = v.name.split('.');
+                                    var tempFileName = urlSplit[0] + ".json";
+                                    return zip.file(tempFileName).async("string");
+                                }).then(function (text) {
+                                    //loader.texturePath = rootPath + "/Textures/";
+                                    loader.setTexturePath(rootPath + "/Textures/");
+                                    loader.parse(JSON.parse(text), function (obj) {
+                                        objLoad(obj);
+                                    });
+                                });
+                            });
+                            break;
+                        case "lzma":
+                            var ajax = new XMLHttpRequest();
+                            ajax.open("GET", url, true);
+                            ajax.responseType = "arraybuffer";
+                            ajax.onload = function () {
+                                var buffer = new Uint8Array(ajax.response);
+                                var my_lzma = new LZMA("js/libs/lzma_worker.js");
+                                my_lzma.decompress(buffer, function on_finish(text) {
+                                    loader.texturePath = rootPath + "/Textures/";
+                                    loader.parse(JSON.parse(text), function (obj) {
+                                        objLoad(obj);
+                                    });
+                                });
+                            };
+                            ajax.send();
+                            break;
+                    }
+                })
+
+                function ungzip(b64Data) {
+                    var strData = atob(b64Data);
+                    var charData = strData.split('').map(function (x) {
+                        return x.charCodeAt(0);
+                    });
+                    var binData = new Uint8Array(charData);
+                    var data = pako.inflate(binData, { to: 'string' });
+                    //strData = String.fromCharCode.apply(null, new Uint16Array(data));
+                    return data;
+                }
+
+                function objLoad(obj) {
+                    scene.add(obj);
+                    initInfo(obj);
+                    update();
+                    num++;
+                    if (num == data.length) {
+                        //所有资料加载完毕，执行回调函数
+                        //加载完成后强行渲染一次
+                        renderer.render(scene, camera);
+                        loadComplete = true;
+                    }
+                }
+            });
+        }
+        var motion = {
+            airborne: false,
+            lastPostiotion: new THREE.Vector3(),
+            position: new THREE.Vector3(), velocity: new THREE.Vector3(),
+            rotation: new THREE.Vector2(), spinning: new THREE.Vector2()
+        };
+        //motion.position.y = 150;
+
+        var keyboardControls = (function () {
+            var keys = { SP: 32, W: 87, A: 65, S: 83, D: 68, UP: 38, LT: 37, DN: 40, RT: 39 };
+
+            var keysPressed = {};
+
+            (function (watchedKeyCodes) {
+                var handler = function (down) {
+                    return function (e) {
+                        var index = watchedKeyCodes.indexOf(e.keyCode);
+                        if (index >= 0) {
+                            keysPressed[watchedKeyCodes[index]] = down;
+                            e.preventDefault();
+                        }
+                    };
+                };
+                window.addEventListener("keydown", handler(true), false);
+                window.addEventListener("keyup", handler(false), false);
+            })([
+                keys.SP, keys.W, keys.A, keys.S, keys.D, keys.UP, keys.LT, keys.DN, keys.RT
+            ]);
+
+            var forward = new THREE.Vector3();
+            var sideways = new THREE.Vector3();
+
+            return function () {
+                if (!motion.airborne) {
+
+                    // look around
+                    var sx = keysPressed[keys.UP] ? 0.03 : (keysPressed[keys.DN] ? -0.03 : 0);
+                    var sy = keysPressed[keys.LT] ? 0.03 : (keysPressed[keys.RT] ? -0.03 : 0);
+
+                    if (Math.abs(sx) >= Math.abs(motion.spinning.x)) motion.spinning.x = sx;
+                    if (Math.abs(sy) >= Math.abs(motion.spinning.y)) motion.spinning.y = sy;
+
+                    // move around
+                    forward.set(Math.sin(motion.rotation.y), 0, Math.cos(motion.rotation.y));
+                    sideways.set(forward.z, 0, -forward.x);
+
+                    forward.multiplyScalar(keysPressed[keys.W] ? -0.1 : (keysPressed[keys.S] ? 0.1 : 0));
+                    sideways.multiplyScalar(keysPressed[keys.A] ? -0.1 : (keysPressed[keys.D] ? 0.1 : 0));
+
+                    var combined = forward.add(sideways);
+                    if (Math.abs(combined.x) >= Math.abs(motion.velocity.x)) motion.velocity.x = combined.x;
+                    if (Math.abs(combined.y) >= Math.abs(motion.velocity.y)) motion.velocity.y = combined.y;
+                    if (Math.abs(combined.z) >= Math.abs(motion.velocity.z)) motion.velocity.z = combined.z;
+
+                    //jump
+                    var vy = keysPressed[keys.SP] ? 0.25 : 0;
+                    motion.velocity.y += vy;
+                }
+            };
+        })();
+
+        var jumpPads = (function () {
+            var pads = [new THREE.Vector3(-17.5, 8, -10), new THREE.Vector3(17.5, 8, -10), new THREE.Vector3(0, 8, 21)];
+            var temp = new THREE.Vector3();
+
+            return function () {
+                if (!motion.airborne) {
+                    for (var j = 0, n = pads.length; j < n; j++) {
+                        if (pads[j].distanceToSquared(motion.position) < 2.3) {
+
+                            // calculate velocity towards another side of platform from jump pad position
+                            temp.copy(pads[j]);
+                            temp.y = 0;
+                            temp.setLength(-0.8);
+                            temp.y = 0.25;
+
+                            motion.airborne = true;
+                            motion.velocity.copy(temp);
+                            break;
+                        }
+                    }
+                }
+            };
+        })();
+
+        var applyPhysics = (function () {
+            var timeStep = 5;
+            var timeLeft = timeStep + 1;
+
+            var birdsEye = 0.5;
+            var kneeDeep = 0.4;
+
+            var raycaster = new THREE.Raycaster();
+            raycaster.ray.direction.set(0, -1, 0);
+
+            var angles = new THREE.Vector2();
+            var displacement = new THREE.Vector3();
+
+            return function (dt) {
+                var platform = scene.getObjectByName("Collision", true);
+                if (platform) {
+                    timeLeft += dt;
+                    // run several fixed-step iterations to approximate varying-step
+                    dt = 5;
+                    while (timeLeft >= dt) {
+
+                        var time = 0.3, damping = 0.93, gravity = 0.01, tau = 2 * Math.PI;
+
+                        raycaster.ray.origin.copy(motion.position);
+                        raycaster.ray.origin.y += birdsEye;
+
+                        var hits = raycaster.intersectObject(platform);
+                        motion.airborne = true;
+
+                        if ((hits.length > 0) && (hits[0].face.normal.y > 0)) {
+                            var actualHeight = hits[0].distance - birdsEye;
+                            if ((motion.velocity.y <= 0) && (Math.abs(actualHeight) < kneeDeep)) {
+                                motion.position.y -= actualHeight;
+                                motion.velocity.y = 0;
+                                motion.airborne = false;
+                                motion.lastPostiotion = motion.position.clone();
+                            }
+                        }
+                        else {
+                            motion.velocity = new THREE.Vector3();
+                            motion.airborne = false;
+                            motion.position = motion.lastPostiotion;
+                        }
+                        if (motion.airborne) motion.velocity.y -= gravity;
+
+
+                        angles.copy(motion.spinning).multiplyScalar(time);
+                        if (!motion.airborne) motion.spinning.multiplyScalar(damping);
+
+                        displacement.copy(motion.velocity).multiplyScalar(time);
+                        if (!motion.airborne) motion.velocity.multiplyScalar(damping);
+
+                        motion.rotation.add(angles);
+                        motion.position.add(displacement);
+                        // limit the tilt at ±0.4 radians
+                        motion.rotation.x = Math.max(-0.4, Math.min(+0.4, motion.rotation.x));
+                        // wrap horizontal rotation to 0...2π
+                        motion.rotation.y += tau;
+                        motion.rotation.y %= tau;
+
+                        timeLeft -= dt;
+                    }
+                }
+            };
+        })();
+
+        var updateCamera = (function () {
+            var euler = new THREE.Euler(0, 0, 0, 'YXZ');
+
+            return function () {
+                euler.x = motion.rotation.x;
+                euler.y = motion.rotation.y;
+                camera.quaternion.setFromEuler(euler);
+
+                camera.position.copy(motion.position);
+
+                //模拟角色身高
+                camera.position.y += 1.7;
+            };
+        })();
+
+        var fps = 30;
+        var now;
+        var then = Date.now();
+        var interval = 1000 / fps;
+        var delta;
+
+        //用于记录上帧和当前帧相机的位置
+        var cameraThenPos = new THREE.Vector3(), cameraNowPos = new THREE.Vector3();
+
+        function update() {
+            //        requestAnimationFrame(update);
+            //
+            //        //渲染优化,1.间隔渲染; 2.判断相机有无运动,无运动则停止渲染
+            //        now = Date.now();
+            //        delta = now - then;
+            //        if (delta > interval) {
+            //            then = now - (delta % interval);
+            //
+            //            if (camera != null)
+            //                cameraThenPos = camera.position.clone();
+            //
+            //            if (camera != null) {
+            //                if (cameraNowPos != null || cameraThenPos != null) {
+            //                    if (cameraNowPos.x != cameraThenPos.x || cameraNowPos.y != cameraThenPos.y || cameraNowPos.z != cameraThenPos.z || !loadComplete) {
+            //                        renderer.render(scene, camera);
+            //                        cameraNowPos = camera.position.clone();
+            //                    }
+            //                }
+            //            }
+            //
+            //            //动画更新
+            //            var delta = 0.75 * clock.getDelta();
+            //            if (mixer) {
+            //                renderer.render(scene, camera);
+            //                mixer.update(delta);
+            //            }
+            //
+            //            //LOD更新
+            //            scene.traverse(function (object) {
+            //                if (object instanceof THREE.LOD) {
+            //                    if (camera != null)
+            //                        object.update(camera);
+            //                }
+            //            });
+        }
+
+        var gameLoop = function (dt) {
+            keyboardControls();
+            jumpPads();
+            applyPhysics(dt);
+            updateCamera();
+        };
+
+        function onResize() {
+            if (camera != null) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.render(scene, camera);
+            }
+        }
+
+        function initInfo(node) {
+
+            //雾效
+            if (node.fog != null) {
+                scene.fog = new THREE.FogExp2(node.fog.color, node.fog.density);
+                scene.fog = new THREE.Fog(node.fog.color, node.fog.near, node.fog.far);
+            }
+
+            //        if( node instanceof  THREE.Mesh)
+            //        {
+            //            node.layer = 1;
+            //            console.log( node );
+            //            var sceneJson = scene.toJSON();
+            //            console.log( JSON.stringify( sceneJson));
+            //        }
+
+            //获取动画物体并且播放动画
+            if (node.animations) {
+                var sceneAnimationClip = node.animations[0];
+                if (sceneAnimationClip != null) {
+                    mixer = new THREE.AnimationMixer(node);
+                    mixer.clipAction(sceneAnimationClip).play();
+                }
+            }
+
+            //针对实时阴影透明贴图阴影显示问题
+            if (node.material != null) {
+                var setCustomDepthMaterail = false;
+                var mainTexture = node.material.map;
+                var matType = node.material.type;
+
+                if (matType == "MultiMaterial") {
+                    var mats = node.material.materials;
+                    for (var i = 0; i < mats.length; i++) {
+                        if (mats[i].transparent == true) {
+                            setCustomDepthMaterail = true;
+                            mainTexture = mats[i].map;
+                        }
+                    }
+                }
+                else {
+                    if (node.material.transparent == true) {
+                        setCustomDepthMaterail = true;
+                    }
+                }
+
+                if (setCustomDepthMaterail == true) {
+                    var uniforms = { texture: { value: mainTexture } };
+                    var vertexShader = document.getElementById('vertex_ShaderDepth').textContent;
+                    var fragmentShader = document.getElementById('fragment_ShaderDepth').textContent;
+
+                    node.customDepthMaterial = new THREE.ShaderMaterial({
+                        uniforms: uniforms,
+                        vertexShader: vertexShader,
+                        fragmentShader: fragmentShader,
+                        side: THREE.DoubleSide
+                    });
+                }
+            }
+
+            ///相机初始化设置
+            if (node instanceof THREE.PerspectiveCamera) {
+                camera = node;
+
+                motion.position = node.position.clone();
+                motion.rotation = new THREE.Vector2(node.rotation.x, node.rotation.y);
+
+                scene.updateMatrixWorld(true);
+                //controls = new THREE.OrbitControls(camera);
+                renderer = new THREE.WebGLRenderer();
+
+                //判断相机下是否有CameraTarget子物体,CameraTarget用于设置相机初始化聚焦点
+                //            var cameraTarget = camera.getObjectByName("CameraTarget");
+                //            if (cameraTarget != null) {
+                //                var cameraTargetPosition = new THREE.Vector3();
+                //                cameraTargetPosition.setFromMatrixPosition(cameraTarget.matrixWorld);
+                //                camera.lookAt(cameraTargetPosition);
+                //                controls.target = cameraTargetPosition;
+                //            }
+
+                //开启相机阴影渲染
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMapSoft = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                renderer.shadowMap.renderReverseSided = false;
+
+                //相机加载完成后刷新
+                onResize();
+                document.getElementById("WebGL_Output").appendChild(renderer.domElement);
+
+
+                var lastTimeStamp;
+                var render = function (timeStamp) {
+                    var timeElapsed = lastTimeStamp ? timeStamp - lastTimeStamp : 0;
+                    lastTimeStamp = timeStamp;
+
+                    // call our game loop with the time elapsed since last rendering, in ms
+                    gameLoop(timeElapsed);
+
+                    renderer.render(scene, camera);
+                    requestAnimationFrame(render);
+                };
+
+                requestAnimationFrame(render);
+
+            }
+
+            ///灯光实时阴影初始化设置
+            if (node instanceof THREE.DirectionalLight) {
+                //设置灯光target物体为子物体
+                var lighTarge = node.getObjectByName("LightTarget");
+                node.target = lighTarge;
+
+                node.castShadow = true;
+                node.shadow.mapSize.width = 1024;
+                node.shadow.mapSize.height = 1024;
+
+                var d = 20;
+
+                node.shadow.camera.left = -d;
+                node.shadow.camera.right = d;
+                node.shadow.camera.top = d;
+                node.shadow.camera.bottom = -d;
+                //node.shadow.camera.near = 0;
+                //node.shadow.camera.far = d;
+                node.shadow.bias = -0.0005;
+                node.shadow.camera.far = 20;
+            }
+
+            //地形设置
+            /*      if (node.name.indexOf("TerrainMesh_") >= 0) {
+    
+             var splatAlphaTex1 = node.material.splatAlphaTex1;
+             var splatAlphaTex2 = node.material.splatAlphaTex2;
+    
+             var terTexture1 = node.material.texture1;
+             var terTexture2 = node.material.texture2;
+             var terTexture3 = node.material.texture3;
+             var terTexture4 = node.material.texture4;
+             var terTexture5 = node.material.texture5;
+             var terTexture6 = node.material.texture6;
+             var terTexture7 = node.material.texture7;
+    
+             $.getJSON(rootPath + "/TerrainInfo.json", function (data) {
+             $.each(data, function (i, v) {
+             switch (v.splatAlphas.length) {
+             case 1:
+             splatAlphaTex1 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.splatAlphas[0]);
+             break;
+             case 2:
+             splatAlphaTex1 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.splatAlphas[0]);
+             splatAlphaTex2 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.splatAlphas[1]);
+             break;
+             }
+    
+             switch (v.textures.length) {
+             case 1:
+             terTexture1 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[0]);
+             break;
+             case 2:
+             terTexture1 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[0]);
+             terTexture2 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[1]);
+             break;
+             case 3:
+             terTexture1 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[0]);
+             terTexture2 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[1]);
+             terTexture3 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[2]);
+             break;
+             case 4:
+             terTexture1 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[0]);
+             terTexture2 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[1]);
+             terTexture3 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[2]);
+             terTexture4 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[3]);
+             break;
+             case 5:
+             terTexture1 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[0]);
+             terTexture2 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[1]);
+             terTexture3 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[2]);
+             terTexture4 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[3]);
+             terTexture5 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[4]);
+             break;
+             case 6:
+             terTexture1 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[0]);
+             terTexture2 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[1]);
+             terTexture3 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[2]);
+             terTexture4 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[3]);
+             terTexture5 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[4]);
+             terTexture6 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[5]);
+             break;
+             case 7:
+             terTexture1 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[0]);
+             terTexture2 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[1]);
+             terTexture3 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[2]);
+             terTexture4 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[3]);
+             terTexture5 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[4]);
+             terTexture6 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[5]);
+             terTexture7 = new THREE.TextureLoader().load(rootPath + "/Textures/" + v.textures[6]);
+             break;
+             }
+    
+             })
+    
+             uniforms = {
+             scale: {value: 1.0},
+             texture1: {value: terTexture1},
+             texture2: {value: terTexture2},
+             texture3: {value: terTexture3},
+             texture4: {value: terTexture4},
+             texture5: {value: terTexture5},
+             texture6: {value: terTexture6},
+             texture7: {value: terTexture7},
+    
+             splatAlpha1: {value: splatAlphaTex1},
+             splatAlpha2: {value: splatAlphaTex2}
+             };
+             uniforms.scale.value = 33.33
+             if (terTexture1 != null)
+             uniforms.texture1.value.wrapS = uniforms.texture1.value.wrapT = THREE.RepeatWrapping;
+             if (terTexture2 != null)
+             uniforms.texture2.value.wrapS = uniforms.texture2.value.wrapT = THREE.RepeatWrapping;
+             if (terTexture3 != null)
+             uniforms.texture3.value.wrapS = uniforms.texture3.value.wrapT = THREE.RepeatWrapping;
+             if (terTexture4 != null)
+             uniforms.texture4.value.wrapS = uniforms.texture4.value.wrapT = THREE.RepeatWrapping;
+             if (terTexture5 != null)
+             uniforms.texture5.value.wrapS = uniforms.texture5.value.wrapT = THREE.RepeatWrapping;
+             if (terTexture6 != null)
+             uniforms.texture6.value.wrapS = uniforms.texture6.value.wrapT = THREE.RepeatWrapping;
+             if (terTexture7 != null)
+             uniforms.texture7.value.wrapS = uniforms.texture7.value.wrapT = THREE.RepeatWrapping;
+    
+             var params = [
+             ['fragment_TerrainShader', uniforms],
+             ];
+             var material = new THREE.ShaderMaterial({
+             uniforms: params[0][1],
+             vertexShader: document.getElementById('vertex_TerrainShader').textContent,
+             fragmentShader: document.getElementById(params[0][0]).textContent
+             });
+             node.material = material;
+             });
+             }*/
+
+            for (var i = 0; i < node.children.length; i++) {
+                initInfo(node.children[i]);
+            }
+        }
+
+        window.onload = start;
+        window.addEventListener("resize", onResize, false);
+    </script>
+</body>
+
+</html>

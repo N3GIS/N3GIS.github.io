@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Export to Three.js</title>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/pako.js"></script>
+    <style>
+        body {
+            margin: 0px;
+            overflow: hidden;
+        }
+
+        body,
+        ul,
+        li {
+            padding: 0;
+            margin: 0;
+        }
+
+        ul,
+        li {
+            list-style: none;
+        }
+
+        img {
+            border: none;
+        }
+
+        a {
+            color: #6cf;
+        }
+
+        a:hover {
+            color: #84B263;
+        }
+
+        .box {
+            width: 75%;
+            margin: 0 auto;
+            position: absolute;
+            overflow: hidden;
+            height: 125px;
+            left: 12.5%;
+            bottom: 0px;
+        }
+
+        .picbox {
+            height: 100px;
+            position: absolute;
+            bottom: 10px;
+        }
+
+        .piclist {
+            height: 115px;
+            position: absolute;
+            left: 0px;
+            bottom: 0px
+        }
+
+        .piclist li {
+            background: #eee;
+            margin-right: 10px;
+            padding: 5px;
+            float: left;
+        }
+
+        .swaplist {
+            position: absolute;
+            left: -6000px;
+            bottom: 0px
+        }
+
+        .og_prev,
+        .og_next {
+            width: 30px;
+            height: 50px;
+            background: url("../../images/next_prev.png") no-repeat;
+            background: url("../../images/next_prev.png") no-repeat \9;
+            position: absolute;
+            bottom: 33px;
+            z-index: 99;
+            cursor: pointer;
+            filter: alpha(opacity=70);
+            opacity: 0.7;
+        }
+
+        .og_prev {
+            background-position: 0 -60px;
+            left: 4px;
+        }
+
+        .og_next {
+            background-position: 0 0;
+            right: 4px;
+        }
+    </style>
+
+    <div id="WebGL_Output"></div>
+    <div class="box" style="position: absolute;">
+        <div class="picbox">
+            <ul class="piclist mainlist">
+                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/2_Small.jpg" name="2" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/3_Small.jpg" name="3" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/4_Small.jpg" name="4" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/5_Small.jpg" name="5" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/6_Small.jpg" name="6" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/7_Small.jpg" name="7" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/8_Small.jpg" name="8" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/9_Small.jpg" name="9" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="10" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
+            </ul>
+            <ul class="piclist swaplist"></ul>
+        </div>
+        <div class="og_prev"></div>
+        <div class="og_next"></div>
+    </div>
+</head>
+
+<body>
+    <script>
+        $(document).ready(function (e) {
+
+            /***不需要自动滚动，去掉即可***/
+            /*time = window.setInterval(function(){
+                $('.og_next').click();
+            },5000);*/
+            /***不需要自动滚动，去掉即可***/
+
+            var linum = $('.mainlist li').length;//图片数量
+            var textureWidth = 240;
+            var w = linum * textureWidth;//ul宽度
+            $('.piclist').css('width', w + 'px');//ul宽度
+
+            $('.swaplist').html($('.mainlist').html());//复制内容
+
+
+            var texturesCount = $('.mainlist li').length;
+            var indexTextures = 0;
+
+            $('.og_next').click(function () {
+                indexTextures++;
+
+                if (indexTextures > texturesCount - 4) {
+                    indexTextures = texturesCount - 4;
+                    return;
+                }
+
+                if ($('.swaplist,.mainlist').is(':animated')) {
+                    $('.swaplist,.mainlist').stop(true, true);
+                }
+
+                if ($('.mainlist li').length > 4) {//多于4张图片
+                    ml = parseInt($('.mainlist').css('left'));//默认图片ul位置
+                    sl = parseInt($('.swaplist').css('left'));//交换图片ul位置
+
+                    if (ml <= 0 && ml > w * -1) {//默认图片显示时
+                        //$('.swaplist').css({left: '2000px'});//交换图片放在显示区域右侧
+                        $('.mainlist').animate({ left: ml - textureWidth + 'px' }, 'slow');//默认图片滚动
+                        if (ml == (w - 1000) * -1) {//默认图片最后一屏时
+                            //$('.swaplist').animate({left: '0px'},'slow');//交换图片滚动
+                        }
+                    } else {//交换图片显示时
+                        // $('.mainlist').css({left: '2000px'})//默认图片放在显示区域右
+                        $('.swaplist').animate({ left: sl - textureWidth + 'px' }, 'slow');//交换图片滚动
+                        if (sl == (w - 1000) * -1) {//交换图片最后一屏时
+                            //$('.mainlist').animate({left: '0px'},'slow');//默认图片滚动
+                        }
+                    }
+                }
+            })
+            $('.og_prev').click(function () {
+                indexTextures--;
+                if (indexTextures < 0) {
+                    indexTextures = 0;
+                    return;
+                }
+
+
+                if ($('.swaplist,.mainlist').is(':animated')) {
+                    $('.swaplist,.mainlist').stop(true, true);
+                }
+
+                if ($('.mainlist li').length > 4) {
+                    ml = parseInt($('.mainlist').css('left'));
+                    sl = parseInt($('.swaplist').css('left'));
+                    if (ml <= 0 && ml > w * -1) {
+                        $('.swaplist').css({ left: w * -1 + 'px' });
+                        $('.mainlist').animate({ left: ml + textureWidth + 'px' }, 'slow');
+                        if (ml == 0) {
+                            $('.swaplist').animate({ left: (w - textureWidth) * -1 + 'px' }, 'slow');
+                        }
+                    } else {
+                        $('.mainlist').css({ left: (w - textureWidth) * -1 + 'px' });
+                        $('.swaplist').animate({ left: sl + textureWidth + 'px' }, 'slow');
+                        if (sl == 0) {
+                            $('.mainlist').animate({ left: '0px' }, 'slow');
+                        }
+                    }
+                }
+            })
+
+        });
+
+    </script>
+    <script type="module">
+        import { loadScene } from './js/threeLoadScene.js';
+        var modelsRoot = "example/ThreeJs/Scenes/";
+        var sceneName = "RobotLab";
+
+        var currentScene;
+        loadScene.createScene(modelsRoot + sceneName);
+
+        var root = document.getElementsByClassName("piclist mainlist")[0]
+        for (var i = 0; i < root.children.length; i++) {
+            root.children[i].addEventListener('click', function (e) {
+                btClick(e.target.name)
+            })
+        }
+
+        function btClick(value) {
+            switch (parseInt(value)) {
+                case 1:
+                    sceneName = "RobotLab"
+                    break;
+                case 2:
+                    sceneName = "ThreeDoneStealth"
+                    break;
+                case 3:
+                    sceneName = "ThreeHangar"
+                    break;
+                case 4:
+                    sceneName = "LegacyAnimation"
+                    break;
+                case 5:
+                    sceneName = "RobotLab"
+                    break;
+                case 6:
+                    sceneName = "RobotLab"
+                    break;
+                case 7:
+                    sceneName = "RobotLab"
+                    break;
+                default:
+                    break;
+            }
+
+            loadScene.dispose();
+            loadScene.createScene(modelsRoot + sceneName);
+
+        }
+    </script>
+</body>
+
+</html>
