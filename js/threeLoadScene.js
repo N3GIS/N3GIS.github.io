@@ -1,4 +1,3 @@
-
 import * as THREE from '../example/ThreeJs/three/build/three.module.js';
 import { OrbitControls } from '../example/ThreeJs/three/jsm/controls/OrbitControls.js';
 
@@ -87,8 +86,6 @@ export var loadScene = {
                     update();
                     num++;
                     if (num == data.length) {
-                        //所有资料加载完毕，执行回调函数
-                        //加载完成后强行渲染一次
                         loadScene.renderer.render(loadScene.scene, loadScene.camera);
                         loadComplete = true;
                         if (callback) {
@@ -106,13 +103,11 @@ export var loadScene = {
         var delta;
 
 
-        //用于记录上帧和当前帧相机的位置
         var cameraThenPos = new THREE.Vector3(), cameraNowPos = new THREE.Vector3();
 
         function update() {
             requestAnimationFrame(update);
 
-            //渲染优化,1.间隔渲染; 2.判断相机有无运动,无运动则停止渲染
             now = Date.now();
             delta = now - then;
             if (delta > interval) {
@@ -133,7 +128,6 @@ export var loadScene = {
                     }
                 }
 
-                //动画更新
                 var delta = 0.75 * clock.getDelta();
                 if (mixer) {
                     if (loadScene.renderer != null) {
@@ -142,7 +136,6 @@ export var loadScene = {
                     mixer.update(delta);
                 }
 
-                //LOD更新
                 loadScene.scene.traverse(function (object) {
                     if (object instanceof THREE.LOD) {
                         if (loadScene.camera != null)
@@ -162,13 +155,11 @@ export var loadScene = {
         }
 
         function initInfo(node) {
-            //雾效
             if (node.fog != null) {
                 loadScene.scene.fog = new THREE.FogExp2(node.fog.color, node.fog.density);
                 loadScene.scene.fog = new THREE.Fog(node.fog.color, node.fog.near, node.fog.far);
             }
 
-            //获取动画物体并且播放动画
             if (node.animations) {
                 var sceneAnimationClip = node.animations[0];
                 if (sceneAnimationClip != null) {
@@ -177,7 +168,6 @@ export var loadScene = {
                 }
             }
 
-            ///相机初始化设置
             if (node instanceof THREE.PerspectiveCamera) {
                 loadScene.camera = node;
 
@@ -185,9 +175,10 @@ export var loadScene = {
 
                 if (loadScene.renderer == null)
                     loadScene.renderer = new THREE.WebGLRenderer({ antialias: true });
+
+                loadScene.renderer.setClearColor(0xC8CFD8,1);
                 loadScene.controls = new OrbitControls(loadScene.camera, loadScene.renderer.domElement);
 
-                //判断相机下是否有CameraTarget子物体,CameraTarget用于设置相机初始化聚焦点
                 var cameraTarget = loadScene.camera.getObjectByName("CameraTarget");
                 if (cameraTarget != null) {
                     var cameraTargetPosition = new THREE.Vector3();
@@ -196,14 +187,11 @@ export var loadScene = {
                     loadScene.controls.target = cameraTargetPosition;
                 }
 
-                //相机加载完成后刷新
                 onResize();
                 document.getElementById("WebGL_Output").appendChild(loadScene.renderer.domElement);
             }
 
-            ///灯光实时阴影初始化设置
             if (node instanceof THREE.DirectionalLight) {
-                //设置灯光target物体为子物体
                 var lighTarge = node.getObjectByName("LightTarget");
                 node.target = lighTarge;
 
@@ -236,6 +224,9 @@ export var loadScene = {
         clearThree(loadScene.scene);
         function clearThree(obj) {
             loadScene.scene.remove(obj)
+            if (obj.fog != null) {
+                obj.fog = null;
+            }
             if (obj.geometry) obj.geometry.dispose();
 
             if (obj.material) {

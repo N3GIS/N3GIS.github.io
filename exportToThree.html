@@ -12,7 +12,6 @@
             overflow: hidden;
         }
 
-        body,
         ul,
         li {
             padding: 0;
@@ -26,6 +25,7 @@
 
         img {
             border: none;
+            width: 240px;
         }
 
         a {
@@ -41,9 +41,9 @@
             margin: 0 auto;
             position: absolute;
             overflow: hidden;
-            height: 125px;
+            height: 145px;
             left: 12.5%;
-            bottom: 0px;
+            bottom: 10px;
         }
 
         .picbox {
@@ -53,7 +53,7 @@
         }
 
         .piclist {
-            height: 115px;
+            height: 135px;
             position: absolute;
             left: 0px;
             bottom: 0px
@@ -64,6 +64,7 @@
             margin-right: 10px;
             padding: 5px;
             float: left;
+            width: 240px;
         }
 
         .swaplist {
@@ -101,23 +102,13 @@
     <div class="box" style="position: absolute;">
         <div class="picbox">
             <ul class="piclist mainlist">
-                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/2_Small.jpg" name="2" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/3_Small.jpg" name="3" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/4_Small.jpg" name="4" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/5_Small.jpg" name="5" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/6_Small.jpg" name="6" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/7_Small.jpg" name="7" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/8_Small.jpg" name="8" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/9_Small.jpg" name="9" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="10" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs/images/1_Small.jpg" name="1" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/mimiMap_0.webp" name="1" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/mimiMap_1.webp" name="2" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/mimiMap_2.webp" name="3" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/mimiMap_3.webp" name="4" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/mimiMap_4.webp" name="5" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/mimiMap_5.webp" name="6" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs/images/mimiMap_5.webp" name="6" /></a></li>
             </ul>
             <ul class="piclist swaplist"></ul>
         </div>
@@ -127,6 +118,7 @@
 </head>
 
 <body>
+
     <script>
         $(document).ready(function (e) {
 
@@ -145,6 +137,7 @@
 
 
             var texturesCount = $('.mainlist li').length;
+            console.log(texturesCount)
             var indexTextures = 0;
 
             $('.og_next').click(function () {
@@ -215,11 +208,12 @@
     <script type="module">
         import { loadScene } from './js/threeLoadScene.js';
         var modelsRoot = "example/ThreeJs/Scenes/";
-        var sceneName = "RobotLab";
+        var sceneName = "Simple_The_Mill";
 
-        var currentScene;
-        loadScene.createScene(modelsRoot + sceneName);
-
+        $(document).ready(function (e) {
+            loadScene.createScene(modelsRoot + sceneName);
+        })
+          
         var root = document.getElementsByClassName("piclist mainlist")[0]
         for (var i = 0; i < root.children.length; i++) {
             root.children[i].addEventListener('click', function (e) {
@@ -239,16 +233,13 @@
                     sceneName = "ThreeHangar"
                     break;
                 case 4:
-                    sceneName = "LegacyAnimation"
+                    sceneName = "Simple_The_Mill"
                     break;
                 case 5:
-                    sceneName = "RobotLab"
+                    sceneName = "Avp4_Mobile"
                     break;
                 case 6:
-                    sceneName = "RobotLab"
-                    break;
-                case 7:
-                    sceneName = "RobotLab"
+                    sceneName = "Demo_01"
                     break;
                 default:
                     break;
@@ -256,7 +247,6 @@
 
             loadScene.dispose();
             loadScene.createScene(modelsRoot + sceneName);
-
         }
     </script>
 </body>
