@@ -111,7 +111,7 @@ var loadScene = {
             }
 
 
-            var registeredPlugin = BABYLON.SceneLoader._registeredPlugins[".babylon"];
+            var registeredPlugin = BABYLON.SceneLoader.GetDefaultPlugin();
             var plugin = registeredPlugin.plugin;
 
 
