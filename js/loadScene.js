@@ -161,16 +161,16 @@ var loadScene = {
 
 
                 engine.runRenderLoop(function () {
-                    // var now = Date.now();
-                    // var delta = now - then;
-                    // if (delta > interval) {
-                    //     then = now - (delta % interval);
+                    var now = Date.now();
+                    var delta = now - then;
+                    if (delta > interval) {
+                        then = now - (delta % interval);
 
-                    if (scene != null && scene.activeCamera != null) {
-                        cameraThenPos = scene.activeCamera.position.clone();
+                        if (scene != null && scene.activeCamera != null) {
+                            cameraThenPos = scene.activeCamera.position.clone();
+                        }
+                        scene.render();
                     }
-                    scene.render();
-                    //}
 
                     if (scene.activeCamera != null) {
                         if (scene.activeCamera.radius < 0.1) {
