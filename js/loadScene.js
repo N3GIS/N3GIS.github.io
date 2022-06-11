@@ -6,7 +6,7 @@ var advancedTexture;
 var highting;
 
 var loadScene = {
-    createScene: function(modelsRoot, sceneName, canvas, callback) {
+    createScene: function (modelsRoot, sceneName, canvas, callback) {
         var packageInfo;
         var num = 0;
         var timestamp = Date.parse(new Date());
@@ -21,7 +21,7 @@ var loadScene = {
             var ajax = new XMLHttpRequest();
             ajax.open("GET", fileURL, true);
             ajax.responseType = "arraybuffer";
-            ajax.onload = function(e) {
+            ajax.onload = function (e) {
                 var binData = new Uint8Array(ajax.response);
                 var EPI_Data = JSON.parse(pako.inflate(binData, { to: 'string' }));
 
@@ -44,7 +44,7 @@ var loadScene = {
                     }
                 }
             };
-            ajax.onprogress = function(value) {};
+            ajax.onprogress = function (value) { };
             ajax.send(null);
         }
 
@@ -54,11 +54,11 @@ var loadScene = {
             var ajax = new XMLHttpRequest();
             ajax.open("GET", fileURL, true);
             ajax.responseType = "text";
-            ajax.onload = function() {
+            ajax.onload = function () {
                 loadSceneByJson(ajax.response);
             };
-            ajax.onError = function() {}
-            ajax.onprogress = function(value) {
+            ajax.onError = function () { }
+            ajax.onprogress = function (value) {
                 //console.log(value.loaded/value.total);
             }
             ajax.send();
@@ -69,12 +69,12 @@ var loadScene = {
             var ajax = new XMLHttpRequest();
             ajax.open("GET", fileURL, true);
             ajax.responseType = "arraybuffer";
-            ajax.onload = function() {
+            ajax.onload = function () {
                 var binData = new Uint8Array(ajax.response);
                 var data = pako.inflate(binData, { to: 'string' });
                 loadSceneByJson(data);
             };
-            ajax.onprogress = function(value) {
+            ajax.onprogress = function (value) {
                 //console.log(value.loaded/value.total);
             }
             ajax.send(null);
@@ -83,7 +83,7 @@ var loadScene = {
         var engine, scene;
 
 
-        this.fps = 25;
+        this.fps = 30;
         var then = Date.now();
         var interval = 1000 / this.fps;
 
@@ -140,7 +140,7 @@ var loadScene = {
                 scene.gravity = new BABYLON.Vector3(0, -1, 0);
                 scene.activeCamera.applyGravity = true;
 
-                scene.executeWhenReady(function() {
+                scene.executeWhenReady(function () {
                     if (scene.activeCamera.keysUp) {
                         scene.activeCamera.keysUp.push(90); // Z
                         scene.activeCamera.keysUp.push(87); // W
@@ -160,17 +160,17 @@ var loadScene = {
                 );
 
 
-                engine.runRenderLoop(function() {
-                    var now = Date.now();
-                    var delta = now - then;
-                    if (delta > interval) {
-                        then = now - (delta % interval);
+                engine.runRenderLoop(function () {
+                    // var now = Date.now();
+                    // var delta = now - then;
+                    // if (delta > interval) {
+                    //     then = now - (delta % interval);
 
-                        if (scene != null && scene.activeCamera != null) {
-                            cameraThenPos = scene.activeCamera.position.clone();
-                        }
-                        scene.render();
+                    if (scene != null && scene.activeCamera != null) {
+                        cameraThenPos = scene.activeCamera.position.clone();
                     }
+                    scene.render();
+                    //}
 
                     if (scene.activeCamera != null) {
                         if (scene.activeCamera.radius < 0.1) {
@@ -179,7 +179,7 @@ var loadScene = {
                     }
                 });
 
-                window.addEventListener("resize", function() {
+                window.addEventListener("resize", function () {
                     if (engine != null)
                         engine.resize();
                     if (scene != null)
