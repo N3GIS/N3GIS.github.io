@@ -184,7 +184,7 @@
         function loadPlayer(scene, engine, canvas) {
             engine.enableOfflineSupport = false;
             // loadScene.setLoadComplete(false);
-            BABYLON.SceneLoader.ImportMesh("", modelsRoot + "player/", "Vincent.BABYLON", scene, (meshes, particleSystems, skeletons) => {
+            BABYLON.SceneLoader.ImportMesh("", modelsRoot + "player/", "Vincent.js", scene, (meshes, particleSystems, skeletons) => {
                 // console.log("laoding meshes");
                 engine.enableOfflineSupport = true;
                 player = meshes[0];
