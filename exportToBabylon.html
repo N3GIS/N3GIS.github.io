@@ -27,6 +27,7 @@
     <script src="js/babylon.js"></script>
     <script src="js/babylon.gui.min.js"></script>
 
+    <script src="js/CharacterController.js"></script>
     <script src="js/loadScene.js"></script>
 </head>
 
@@ -42,6 +43,11 @@
                 scene.activeCamera.wheelPrecision = 1;
                 scene.activeCamera.panningSensibility = 10;
                 showDebugLayer(scene)
+
+                if (scene.getNodeByName("NavMesh") != null) {
+                    loadPlayer(scene, scene.getEngine(), canvas);
+                }
+
             });
 
 
@@ -174,6 +180,113 @@
                 panel.addControl(header);
             }
         });
+
+
+        function loadPlayer(scene, engine, canvas) {
+            engine.enableOfflineSupport = false;
+            // loadScene.setLoadComplete(false);
+            BABYLON.SceneLoader.ImportMesh("", modelsRoot + "player/", "Vincent.BABYLON", scene, (meshes, particleSystems, skeletons) => {
+                // console.log("laoding meshes");
+                engine.enableOfflineSupport = true;
+                player = meshes[0];
+                var skeleton = skeletons[0];
+                player.skeleton = skeleton;
+
+                skeleton.enableBlending(0.1);
+                //if the skeleton does not have any animation ranges then set them as below
+                // setAnimationRanges(skeleton);
+
+                //console.log("laoding meshes 1");
+                var sm = player.material;
+
+                if (sm.diffuseTexture != null) {
+                    sm.backFaceCulling = true;
+                    sm.ambientColor = new BABYLON.Color3(1, 1, 1);
+                }
+
+                var FPS_POSITION_Obj = scene.getNodeByName("FPS_POSITION");
+                player.position = FPS_POSITION_Obj.position;//new BABYLON.Vector3(0,12,0);
+
+                //console.log(player);
+                player.rotation = new BABYLON.Vector3(FPS_POSITION_Obj.rotation.x, -FPS_POSITION_Obj.rotation.y, FPS_POSITION_Obj.rotation.z);
+                player.checkCollisions = true;
+                player.ellipsoid = new BABYLON.Vector3(0.3, 1, 0.3);
+                player.ellipsoidOffset = new BABYLON.Vector3(0, 1, 0);
+
+                //rotate the camera behind the player
+                var alpha = -player.rotation.y - 4.69;
+                var beta = Math.PI / 2.5;
+                var target = new BABYLON.Vector3(player.position.x, player.position.y + 1.85, player.position.z);
+
+                //console.log("laoding meshes 1.1");
+                var camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", alpha, beta, 5, target, scene);
+                camera.name = "FPC_Camera";
+                scene.activeCameras = [];
+
+                camera.minZ = 0.1;
+                camera.maxZ = 100000;
+
+
+                scene.activeCameras.push(camera);
+
+                //standard camera setting
+                camera.wheelPrecision = 15;
+                camera.checkCollisions = false;
+                //make sure the keyboard keys controlling camera are different from those controlling player
+                //here we will not use any keyboard keys to control camera
+                camera.keysLeft = [];
+                camera.keysRight = [];
+                camera.keysUp = [];
+                camera.keysDown = [];
+                //how close can the camera come to player
+                camera.lowerRadiusLimit = 0.1;
+                //how far can the camera go from the player
+                camera.upperRadiusLimit = 20;
+
+                camera.onViewMatrixChangedObservable.add(function () {
+                    if (camera.radius <= 1)
+                        camera.radius = 1;
+                });
+
+                camera.attachControl(canvas, true);
+
+                //console.log("laoding meshes 2");
+                //var CharacterController = org.ssatguru.BABYLONjs.component.CharacterController;
+                var cc = new CharacterController(player, camera, scene);
+                //below makes the controller point the camera at the player head which is approx
+                //1.5m above the player origin
+                cc.setCameraTarget(new BABYLON.Vector3(0, 1.6, 0));
+
+                //if the camera comes close to the player we want to enter first person mode.
+                cc.setNoFirstPerson(false);
+                //the height of steps which the player can climb
+                cc.setStepOffset(0.4);
+                //the minimum and maximum slope the player can go up
+                //between the two the player will start sliding down if it stops
+                cc.setSlopeLimit(30, 60);
+
+                //tell controller
+                // - which animation range should be used for which player animation
+                // - rate at which to play that animation range
+                // - wether the animation range should be looped
+                //use this if name, rate or looping is different from default
+                cc.setIdleAnim("idle", 1, true);
+                cc.setTurnLeftAnim("turnLeft", 0.5, true);
+                cc.setTurnRightAnim("turnRight", 0.5, true);
+                cc.setWalkBackAnim("walkBack", 0.5, true);
+                cc.setIdleJumpAnim("idleJump", .5, false);
+                cc.setRunJumpAnim("runJump", 0.6, false);
+                //set the animation range name to "null" to prevent the controller from playing
+                //a player animation.
+                //here even though we have an animation range called "fall" we donot want to play
+                //the fall animation
+                cc.setFallAnim("fall", 2, false);
+                cc.setSlideBackAnim("slideBack", 1, false);
+
+                cc.start();
+            });
+
+        }
     </script>
 </body>
 
