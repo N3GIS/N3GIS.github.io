@@ -6,9 +6,15 @@ export var loadScene = {
     camera: null,
     renderer: null,
     controls: null,
+    updateID: null,
+    fps: 30,
+    now: null,
+    then: null,
     createScene: function (rootPath, callback) {
-        if (loadScene.scene == null)
+        if (loadScene.scene == null) {
             loadScene.scene = new THREE.Scene();
+        }
+
         var loader = new THREE.ObjectLoader();
 
         if (loadScene.renderer == null) {
@@ -76,28 +82,25 @@ export var loadScene = {
                         //所有资料加载完毕，执行回调函数
                         //加载完成后强行渲染一次
                         loadScene.renderer.render(loadScene.scene, loadScene.camera);
-
                     }
                 }
             });
         }
 
-        var fps = 30;
-        var now;
-        var then = Date.now();
-        var interval = 1000 / fps;
+        var interval = 1000 / loadScene.fps;
         var delta;
 
         //用于记录上帧和当前帧相机的位置
         var cameraThenPos = new THREE.Vector3(), cameraNowPos = new THREE.Vector3();
 
         function update() {
-            requestAnimationFrame(update);
+            loadScene.updateID = requestAnimationFrame(update);
+
             //渲染优化,1.间隔渲染; 2.判断相机有无运动,无运动则停止渲染
-            now = Date.now();
-            delta = now - then;
+            loadScene.now = Date.now();
+            delta = loadScene.now - loadScene.then;
             if (delta > interval) {
-                then = now - (delta % interval);
+                loadScene.then = loadScene.now - (delta % interval);
 
                 if (loadScene.camera != null)
                     cameraThenPos = loadScene.camera.position.clone();
@@ -130,8 +133,10 @@ export var loadScene = {
             if (node instanceof THREE.PerspectiveCamera) {
                 loadScene.camera = node;
                 loadScene.scene.updateMatrixWorld(true);
-                //if (loadScene.controls == null)
-                loadScene.controls = new OrbitControls(loadScene.camera, loadScene.renderer.domElement);
+                if (loadScene.controls == null) {
+                    loadScene.controls = new OrbitControls(loadScene.camera, loadScene.renderer.domElement);
+                }
+
                 //判断相机下是否有CameraTarget子物体,CameraTarget用于设置相机初始化聚焦点
                 var cameraTarget = loadScene.camera.getObjectByName("CameraTarget");
                 if (cameraTarget != null) {
@@ -157,6 +162,25 @@ export var loadScene = {
         if (loadScene.scene == null)
             return;
         clearThree(loadScene.scene);
+
+        cancelAnimationFrame(loadScene.updateID);
+
+        document.getElementById("WebGL_Output").removeChild(loadScene.renderer.domElement)
+
+        loadScene.renderer.dispose();
+        loadScene.renderer.forceContextLoss()
+        loadScene.renderer.context = null;
+        loadScene.renderer.domElement = null
+
+        loadScene.controls.dispose();
+        loadScene.scene.clear();
+
+        loadScene.camera = null;
+        loadScene.controls = null;
+        loadScene.renderer = null;
+        loadScene.scene = null;
+        loadScene.updateID = null;
+
         function clearThree(obj) {
             loadScene.scene.remove(obj)
             if (obj.fog != null) {

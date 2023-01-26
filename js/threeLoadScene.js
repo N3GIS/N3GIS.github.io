@@ -86,10 +86,12 @@ export var loadScene = {
                     update();
                     num++;
                     if (num == data.length) {
+                        console.log(loadScene.scene.getObjectByName("地形01").material)
                         loadScene.renderer.render(loadScene.scene, loadScene.camera);
                         loadComplete = true;
                         if (callback) {
                             callback(loadScene.scene);
+                          
                         }
                     }
                 }

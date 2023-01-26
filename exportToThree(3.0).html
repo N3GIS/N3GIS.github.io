@@ -109,7 +109,8 @@
                 <li><a href="#"> <img src="example/ThreeJs(3.0)/images/mimiMap_4.webp" name="5" /></a></li>
                 <li><a href="#"> <img src="example/ThreeJs(3.0)/images/mimiMap_5.webp" name="6" /></a></li>
                 <li><a href="#"> <img src="example/ThreeJs(3.0)/images/mimiMap_6.webp" name="7" /></a></li>
-                <li><a href="#"> <img src="example/ThreeJs(3.0)/images/mimiMap_6.webp" name="7" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs(3.0)/images/mimiMap_7.webp" name="8" /></a></li>
+                <li><a href="#"> <img src="example/ThreeJs(3.0)/images/mimiMap_7.webp" name="8" /></a></li>
             </ul>
             <ul class="piclist swaplist"></ul>
         </div>
@@ -215,7 +216,7 @@
     <script type="module">
         import { loadScene } from './js/threeLoadScene(3.0).js';
         var modelsRoot = "example/ThreeJs(3.0)/Scenes/";
-        var sceneName = "1_BoomBox";
+        var sceneName = "Demo_01";
 
         $(document).ready(function (e) {
             loadScene.createScene(modelsRoot + sceneName);
@@ -250,6 +251,9 @@
                     break;
                 case 7:
                     sceneName = "ThreeDoneStealth"
+                    break;
+                case 8:
+                    sceneName = "Demo_01"
                     break;
                 default:
                     break;
