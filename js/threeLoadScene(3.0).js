@@ -70,6 +70,12 @@ export var loadScene = {
                             loadScene.scene.background = obj.background
                         if (obj.environment)
                             loadScene.scene.environment = obj.environment
+                        if (obj.backgroundBlurriness) {
+                            loadScene.scene.backgroundBlurriness = obj.backgroundBlurriness
+                        }
+                        if (obj.backgroundIntensity) {
+                            loadScene.scene.backgroundIntensity = obj.backgroundIntensity
+                        }
                         if (obj.fog)
                             loadScene.scene.fog = obj.fog
                     }
