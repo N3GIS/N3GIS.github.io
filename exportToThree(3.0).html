@@ -233,6 +233,10 @@
         import { loadScene } from './js/threeLoadScene(3.0).js';
         var modelsRoot = "example/ThreeJs(3.0)/Scenes/";
         var sceneName = "1_BoomBox";
+        var urlScene = getQueryString('scene')
+        if (urlScene) {
+            sceneName = urlScene
+        }
 
         $(document).ready(function (e) {
             loadScene.createScene(modelsRoot + sceneName);
@@ -284,6 +288,16 @@
             loadScene.dispose();
             loadScene.createScene(modelsRoot + sceneName);
         }
+
+        function getQueryString(name) {
+            let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            let r = window.location.search.substr(1).match(reg);
+            if (r != null) {
+                return decodeURIComponent(r[2]);
+            };
+            return null;
+        }
+
     </script>
 </body>
 
