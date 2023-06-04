@@ -1,0 +1,157 @@
+[
+  {
+    "modelName": "233.0.0376.98-ASM_Shifting.bin",
+    "cadName": "233.0.0376.98-ASM_Shifting.stp",
+    "state": 1
+  },
+  {
+    "modelName": "3M-10268-6212PC.bin",
+    "cadName": "3M-10268-6212PC.stp",
+    "state": 1
+  },
+  {
+    "modelName": "nist_ctc_01_asme1_ap203.bin",
+    "cadName": "nist_ctc_01_asme1_ap203.stp",
+    "state": 1
+  },
+  {
+    "modelName": "nist_ctc_02_asme1_ap203.bin",
+    "cadName": "nist_ctc_02_asme1_ap203.stp",
+    "state": 1
+  },
+  {
+    "modelName": "nist_ctc_03_asme1_ap203.bin",
+    "cadName": "nist_ctc_03_asme1_ap203.stp",
+    "state": 1
+  },
+  {
+    "modelName": "nist_ctc_04_asme1_ap203.bin",
+    "cadName": "nist_ctc_04_asme1_ap203.stp",
+    "state": 1
+  },
+  {
+    "modelName": "nist_ctc_05_asme1_ap203.bin",
+    "cadName": "nist_ctc_05_asme1_ap203.stp",
+    "state": 1
+  },
+  {
+    "modelName": "nist_ctc_02_asme1_ap242-1.bin",
+    "cadName": "nist_ctc_02_asme1_ap242-1.stp",
+    "state": 1
+  },
+  {
+    "modelName": "ZAZ_33.bin",
+    "cadName": "ZAZ_33.stp",
+    "state": 1
+  },
+  {
+    "modelName": "Heavy_Lifting_Tow_Truck.bin",
+    "cadName": "Heavy_Lifting_Tow_Truck.CATPart",
+    "state": 1
+  },
+  {
+    "modelName": "中文测试.bin",
+    "cadName": "中文测试.stp",
+    "state": 1
+  },
+  {
+    "modelName": "XFMR_EDA-01905-V1-0_misc2.bin",
+    "cadName": "XFMR_EDA-01905-V1-0_misc2.stp",
+    "state": 1
+  },
+  {
+    "modelName": "RST_basic_sample_project.bin",
+    "cadName": "RST_basic_sample_project.ifc",
+    "state": 1
+  },
+  {
+    "modelName": "FZK_Haus.bin",
+    "cadName": "FZK_Haus.ifc",
+    "state": 1
+  },
+  {
+    "modelName": "Duplex_A_20110505.bin",
+    "cadName": "Duplex_A_20110505.ifc",
+    "state": 1
+  },
+  {
+    "modelName": "bt58.bin",
+    "cadName": "bt58.ipt",
+    "state": 1
+  },
+  {
+    "modelName": "motor_JeffersonRuiz_v13.bin",
+    "cadName": "motor_JeffersonRuiz_v13.ipt",
+    "state": 1
+  },
+  {
+    "modelName": "tanque_JeffersonRuiz_v10.bin",
+    "cadName": "tanque_JeffersonRuiz_v10.ipt",
+    "state": 1
+  },
+  {
+    "modelName": "Assem1.bin",
+    "cadName": "Assem1.x_t",
+    "state": 1
+  },
+  {
+    "modelName": "11QAP1070100.bin",
+    "cadName": "11QAP1070100.SLDASM",
+    "state": 1
+  },
+  {
+    "modelName": "Outer.bin",
+    "cadName": "Outer.SLDPRT",
+    "state": 1
+  },
+  {
+    "modelName": "GearReducer.bin",
+    "cadName": "GearReducer.SLDASM",
+    "state": 1
+  },
+  {
+    "modelName": "RotaryTiller.bin",
+    "cadName": "RotaryTiller.sldprt",
+    "state": 1
+  },
+  {
+    "modelName": "rcad_eba_ea_01.prt.bin",
+    "cadName": "rcad_eba_ea_01.prt.13",
+    "state": 1
+  },
+  {
+    "modelName": "MecanumWheelType-B.bin",
+    "cadName": "MecanumWheelType-B.jt",
+    "state": 1
+  },
+  {
+    "modelName": "FPE024771.bin",
+    "cadName": "FPE024771.par",
+    "state": 1
+  },
+  {
+    "modelName": "DP2000051.bin",
+    "cadName": "DP2000051.par",
+    "state": 1
+  },
+  {
+    "modelName": "F1-KEY-SHOT.bin",
+    "cadName": "F1-KEY-SHOT.stp",
+    "state": 1
+  },
+  {
+    "modelName": "H11转盘式自动铆钉机.bin",
+    "cadName": "H11转盘式自动铆钉机.stp",
+    "state": 1
+  },
+  {
+    "modelName": "KJ-66.bin",
+    "cadName": "KJ-66.STEP",
+    "state": 1
+  },
+  {
+    "modelName": "Lamborghini.bin",
+    "cadName": "Lamborghini.stp",
+    "state": 1
+  }
+]
