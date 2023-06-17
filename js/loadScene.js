@@ -238,7 +238,7 @@ var loadScene = {
                 }
             }
 
-            scene._removePendingData();
+            //scene._removePendingData();
 
             modelsPath = null;
             jsonData = null;
