@@ -13,7 +13,7 @@
             margin: 0;
             padding: 0;
         }
-        
+
         #renderCanvas {
             width: 100%;
             height: 100%;
@@ -35,10 +35,10 @@
     <canvas id="renderCanvas"></canvas>
     <script>
         var modelsRoot = "example/BabylonJs/Scenes/";
-        var sceneName = "RobotLab";
+        var sceneName = "Simple_The_Mill";
         var canvas = document.getElementById("renderCanvas")
 
-        loadScene.createScene(modelsRoot, sceneName, canvas, function(scene) {
+        loadScene.createScene(modelsRoot, sceneName, canvas, function (scene) {
             scene.executeWhenReady(() => {
                 scene.activeCamera.wheelPrecision = 1;
                 scene.activeCamera.panningSensibility = 10;
@@ -86,13 +86,13 @@
                     bt.onPointerClickObservable.add((val, bt) => {
                         switch (bt.target.name) {
                             case "bt_0":
-                                sceneName = "RobotLab";
+                                sceneName = "Simple_The_Mill";
                                 break;
                             case "bt_1":
                                 sceneName = "ThreeDoneStealth";
                                 break;
                             case "bt_2":
-                                sceneName = "Simple_The_Mill";
+                                sceneName = "RobotLab";
                                 break;
                             case "bt_3":
                                 sceneName = "Demo_01";
@@ -114,7 +114,7 @@
                         scene.getEngine().dispose();
                         scene = null;
 
-                        loadScene.createScene(modelsRoot, sceneName, canvas, function(newScene) {
+                        loadScene.createScene(modelsRoot, sceneName, canvas, function (newScene) {
                             newScene.executeWhenReady(() => {
                                 newScene.activeCamera.wheelPrecision = 1;
                                 newScene.activeCamera.panningSensibility = 10;
@@ -141,7 +141,7 @@
                 checkbox.height = "20px";
                 checkbox.isChecked = false;
                 checkbox.color = "#409EFF";
-                checkbox.onIsCheckedChangedObservable.add(function(value) {
+                checkbox.onIsCheckedChangedObservable.add(function (value) {
                     if (value) {
                         scene.debugLayer.show();
                     } else {
