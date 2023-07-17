@@ -153,5 +153,20 @@
     "modelName": "Lamborghini.bin",
     "cadName": "Lamborghini.stp",
     "state": 1
+  },
+  {
+    "modelName": "驾驶室.bin",
+    "cadName": "驾驶室.stp",
+    "state": 1
+  },
+  {
+    "modelName": "Havyard-842-V3.bin",
+    "cadName": "Havyard-842-V3.step",
+    "state": 1
+  },
+  {
+    "modelName": "ZAZ965-engine_v1_brayvo.ru.bin",
+    "cadName": "ZAZ965-engine_v1_brayvo.ru.SLDPRT",
+    "state": 1
   }
 ]
