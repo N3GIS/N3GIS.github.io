@@ -22,12 +22,12 @@
       var canvas = document.querySelector("#unity-canvas");
       var loadingBar = document.querySelector("#unity-loading-bar");
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      var buildUrl = "example/RevitBridge/Build/";
-      var loaderUrl = buildUrl + "Build.loader.js";
+      var buildUrl = "example/RevitBridge/Build";
+      var loaderUrl = buildUrl + "/Build.loader.js";
       var config = {
-        dataUrl: buildUrl + "Build.data.unityweb",
-        frameworkUrl: buildUrl + "Build.framework.js.unityweb",
-        codeUrl: buildUrl + "Build.wasm.unityweb",
+        dataUrl: buildUrl + "/Build.data.unityweb",
+        frameworkUrl: buildUrl + "/Build.framework.js.unityweb",
+        codeUrl: buildUrl + "/Build.wasm.unityweb",
         streamingAssetsUrl: "example/RevitBridge/StreamingAssets",
         companyName: "DefaultCompany",
         productName: "RevitBridge",
