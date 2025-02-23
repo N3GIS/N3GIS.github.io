@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="renderer" content="webkit" />
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no" />
+  <title>Revit Bridge</title>
+  <link rel="stylesheet" type="text/css"
+    href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css" />
+  <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
+</head>
+
+<body style="margin: 0px">
+  <div id="viewer-local"></div>
+  <script>
+    var viewer;
+    var viewerOptions = {
+      extensions: [
+        "Autodesk.Viewing.ZoomWindow",
+        "Autodesk.AEC.Minimap3DExtension",
+        "Autodesk.AEC.LevelsExtension",
+        "Autodesk.ModelStructure",
+        "Autodesk.ViewerSettings",
+        "Autodesk.PropertiesManager",
+      ],
+      disabledExtensions: {
+        measure: false,
+        section: false,
+      },
+      memory: {
+        limit: 32 * 1024, //32 GB
+      },
+    };
+
+    var systemOptions = {
+      env: "Local",
+      offline: "true",
+      useADP: false,
+
+      offlineResourcePrefix: location.href.substring(0, location.href.lastIndexOf("/")),
+    };
+
+    Autodesk.Viewing.Initializer(systemOptions, function () {
+      var element = document.getElementById("viewer-local");
+      viewer = window.viewer = new Autodesk.Viewing.Private.GuiViewer3D(
+        element,
+        viewerOptions
+      );
+
+      var startedCode = viewer.start();
+      if (startedCode > 0) {
+        console.error("Failed to create a Viewer: WebGL not supported.");
+        return;
+      }
+
+      var documentPath = decodeURIComponent(
+        systemOptions.offlineResourcePrefix + "/manifest-model.json"
+      );
+      Autodesk.Viewing.Document.load(documentPath, (doc) => {
+        doc.downloadAecModelData();
+
+        var viewable = doc.getRoot().getDefaultGeometry();
+        var modelOptions = {};
+        viewer.loadDocumentNode(doc, viewable, modelOptions).then(onLoadSuccess);
+
+        viewer.addEventListener(
+          Autodesk.Viewing.TEXTURES_LOADED_EVENT, () => {
+            viewer.getExtension("Autodesk.ModelStructure").activate();
+            viewer.getExtension("Autodesk.PropertiesManager").activate();
+          }
+        );
+      });
+    });
+
+    function onLoadSuccess(event) {
+      console.log("success");
+    }
+  </script>
+</body>
+
+</html>

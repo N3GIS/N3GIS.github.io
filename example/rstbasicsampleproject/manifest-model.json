@@ -1,0 +1,71 @@
+{
+  "version": "1.0",
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6YmltYW5nbGUvaW5wdXQucnZ0",
+  "type": "manifest",
+  "progress": "complete",
+  "status": "success",
+  "hasThumbnail": "false",
+  "region": "US",
+  "derivatives": [
+    {
+      "outputType": "svf",
+      "status": "success",
+      "name": "input.rvt",
+      "hasThumbnail": "false",
+      "progress": "complete",
+      "children": [
+        {
+          "type": "resource",
+          "role": "Autodesk.AEC.ModelData",
+          "status": "success",
+          "mime": "application/json",
+          "urn": "./AECModelData.json",
+          "guid": "a17c750e-f5bc-44d4-b4aa-e26e5188ce3d"
+        },
+        {
+          "type": "geometry",
+          "role": "3d",
+          "status": "success",
+          "name": "3d",
+          "hasThumbnail": "false",
+          "progress": "complete",
+          "guid": "e8f7a55e-6c75-4029-bf99-b1855b9c7828",
+          "children": [
+            {
+              "type": "view",
+              "role": "3d",
+              "status": "success",
+              "name": "3d",
+              "progress": "complete",
+              "guid": "0b04bea8-5792-464d-9ded-8b1577a44d9c-001631ac",
+              "camera": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "type": "resource",
+              "role": "3d",
+              "mime": "application/autodesk-svf",
+              "urn": "./3d.svf",
+              "progress": "graphics",
+              "guid": "ecb8d305-0d58-4f4d-8437-3f80e925639a"
+            }
+          ],
+          "viewableID": "0b04bea8-5792-464d-9ded-8b1577a44d9c-001631ac"
+        }
+      ]
+    }
+  ]
+}
