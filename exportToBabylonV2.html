@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Export To Babylon.js(V2)</title>
+    <style>
+        html,
+        body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/pako.js"></script>
+
+    <script src="js/BabylonJsV2/babylon.js"></script>
+    <script src="js/babylon.gui.min.js"></script>
+
+    <script src="js/CharacterController.js"></script>
+    <script src="js/BabylonJsV2/loadScene.js"></script>
+</head>
+
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        var modelsRoot = "example/BabylonJsV2/Scenes/";
+        var sceneName = "1_BoomBox";
+        var canvas = document.getElementById("renderCanvas")
+
+        loadScene.createScene(modelsRoot, sceneName, canvas, function (scene) {
+            scene.executeWhenReady(() => {
+                scene.activeCamera.wheelPrecision = 1;
+                scene.activeCamera.panningSensibility = 10;
+                showDebugLayer(scene)
+
+                if (scene.getNodeByName("NavMesh") != null) {
+                    loadPlayer(scene, scene.getEngine(), canvas);
+                }
+
+            });
+
+            function showDebugLayer(scene) {
+                // GUI
+                var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+                var sv = new BABYLON.GUI.ScrollViewer();
+                sv.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+                sv.barSize = 10;
+                sv.width = window.innerWidth * 0.75 + "px";//"1280px";
+                sv.height = "155px";
+                sv.top = -10
+                sv.background = "#FFFFFF55";
+                sv.thickness = 0;
+                sv.barColor = "#409EFF";
+                sv.barBackground = "#ebeef555";
+                sv.barThickness = 0
+
+                advancedTexture.addControl(sv);
+
+                var gd = new BABYLON.GUI.Grid();
+                var columCount = 12;
+                gd.width = 250 * columCount + "px";
+                gd.height = "145px";
+                for (var i = 0; i < columCount; i++) {
+                    gd.addColumnDefinition(1 / columCount);
+                    var bt = BABYLON.GUI.Button.CreateImageOnlyButton(
+                        "but",
+                        "example/BabylonJsV2/Images/mimiMap_" + i + ".webp"
+                    );
+                    bt.thickness = 0;
+                    bt.width = "240px";
+                    bt.height = "135px";
+                    bt.hoverCursor = "pointer";
+                    bt.name = "bt_" + i;
+                    bt.onPointerClickObservable.add((val, bt) => {
+                        switch (bt.target.name) {
+                            case "bt_0":
+                                sceneName = "Simple_The_Mill";
+                                break;
+                            case "bt_1":
+                                sceneName = "ThreeDoneStealth";
+                                break;
+                            case "bt_2":
+                                sceneName = "RobotLab";
+                                break;
+                            case "bt_3":
+                                sceneName = "Demo_01";
+                                break;
+                            case "bt_4":
+                                sceneName = "7_CAD_Heavy_Lifting_Tow_Truck";
+                                break;
+                            case "bt_5":
+                                sceneName = "8_CAD_Havyard-842-V3";
+                                break;
+                            case "bt_6":
+                                sceneName = "9_CAD_nist_ctc_02_asme1";
+                                break;
+                            case "bt_7":
+                                sceneName = "10_CAD_RC_Car";
+                                break;
+                            case "bt_8":
+                                sceneName = "1_BoomBox";
+                                break;
+                            case "bt_9":
+                                sceneName = "2_Corset";
+                                break;
+                            case "bt_10":
+                                sceneName = "3_WaterBottle";
+                                break;
+                            case "bt_11":
+                                sceneName = "5_IridescentDishWithOlives";
+                                break;
+                            default:
+                                sceneName = "AeroEngine";
+                                break;
+                        }
+                        scene.dispose();
+                        scene.getEngine().dispose();
+                        scene = null;
+
+                        loadScene.createScene(modelsRoot, sceneName, canvas, function (newScene) {
+                            newScene.executeWhenReady(() => {
+                                var wheelPrecision = 1;
+                                var panningSensibility = 10;
+                                switch (bt.target.name) {
+                                    case "bt_0":
+                                        sceneName = "Simple_The_Mill";
+                                        break;
+                                    case "bt_1":
+                                        wheelPrecision = 2;
+                                        panningSensibility = 200;
+                                        break;
+                                    case "bt_2":
+                                        wheelPrecision = 2;
+                                        panningSensibility = 200;
+                                        break;
+                                    case "bt_3":
+                                        wheelPrecision = 0.1;
+                                        panningSensibility = 10;
+                                        break;
+                                    case "bt_4":
+                                        wheelPrecision = 1;
+                                        panningSensibility = 100;
+                                        break;
+                                    case "bt_5":
+                                        wheelPrecision = 1;
+                                        panningSensibility = 100;
+                                        break;
+                                    case "bt_6":
+                                        wheelPrecision = 5;
+                                        panningSensibility = 500;
+                                        break;
+                                    case "bt_7":
+                                        wheelPrecision = 10;
+                                        panningSensibility = 1000;
+                                        break;
+                                    case "bt_8":
+                                        wheelPrecision = 50;
+                                        panningSensibility = 3000;
+                                        break;
+                                    case "bt_9":
+                                        wheelPrecision = 10;
+                                        panningSensibility = 1000;
+                                        break;
+                                    case "bt_10":
+                                        wheelPrecision = 50;
+                                        panningSensibility = 3000;
+                                        break;
+                                    case "bt_11":
+                                        wheelPrecision = 50;
+                                        panningSensibility = 3000;
+                                        break;
+                                    default:
+                                        wheelPrecision = 1;
+                                        panningSensibility = 100;
+                                        break;
+                                }
+                                newScene.activeCamera.wheelPrecision = wheelPrecision;
+                                newScene.activeCamera.panningSensibility = panningSensibility;
+                                showDebugLayer(newScene)
+                            });
+                        })
+                    });
+                    gd.addControl(bt, 0, i);
+                }
+                sv.addControl(gd);
+
+
+                var panel = new BABYLON.GUI.StackPanel();
+                panel.width = "200px";
+                panel.height = "35px";
+                panel.top = -160;
+                panel.isVertical = false;
+                panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+                panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+                advancedTexture.addControl(panel);
+
+                var checkbox = new BABYLON.GUI.Checkbox();
+                checkbox.width = "20px";
+                checkbox.height = "20px";
+                checkbox.isChecked = false;
+                checkbox.color = "#409EFF";
+                checkbox.onIsCheckedChangedObservable.add(function (value) {
+                    if (value) {
+                        scene.debugLayer.show();
+                    } else {
+                        scene.debugLayer.hide();
+                    }
+                });
+                panel.addControl(checkbox);
+
+                var header = new BABYLON.GUI.TextBlock();
+                header.text = " Show DebugLayer";
+                header.fontWeight = "bolder"
+                header.color = "#409EFF";
+                header.shadowOffsetX = 1
+                header.shadowOffsetY = 1
+                header.width = "180px";
+                header.marginLeft = "5px";
+                header.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+
+
+                var btLink = BABYLON.GUI.Button.CreateSimpleButton("but", "Export To Babylon.js (V2)");
+                btLink.width = "400px";
+                btLink.height = "50px";
+                btLink.textBlock.shadowOffsetX = 3
+                btLink.textBlock.shadowOffsetY = 3
+                btLink.fontSize = "28px";
+                btLink.fontWeight = "bolder"
+                btLink.color = "#409EFF";
+                btLink.thickness = 0;
+                btLink.hoverCursor = "pointer";
+                btLink.verticalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_TOP;
+                btLink.onPointerClickObservable.add(() => {
+                    window.open('https://assetstore.unity.com/packages/slug/201002');
+                })
+                advancedTexture.addControl(btLink);
+                panel.addControl(header);
+            }
+        });
+
+
+        function loadPlayer(scene, engine, canvas) {
+            engine.enableOfflineSupport = false;
+            // loadScene.setLoadComplete(false);
+            BABYLON.SceneLoader.ImportMesh("", modelsRoot + "player/", "Vincent.js", scene, (meshes, particleSystems, skeletons) => {
+                // console.log("laoding meshes");
+                engine.enableOfflineSupport = true;
+                player = meshes[0];
+                var skeleton = skeletons[0];
+                player.skeleton = skeleton;
+
+                skeleton.enableBlending(0.1);
+                //if the skeleton does not have any animation ranges then set them as below
+                // setAnimationRanges(skeleton);
+
+                //console.log("laoding meshes 1");
+                var sm = player.material;
+
+                if (sm.diffuseTexture != null) {
+                    sm.backFaceCulling = true;
+                    sm.ambientColor = new BABYLON.Color3(1, 1, 1);
+                }
+
+                var FPS_POSITION_Obj = scene.getNodeByName("FPS_POSITION");
+                player.position = FPS_POSITION_Obj.position;//new BABYLON.Vector3(0,12,0);
+
+                //console.log(player);
+                player.rotation = new BABYLON.Vector3(FPS_POSITION_Obj.rotation.x, -FPS_POSITION_Obj.rotation.y, FPS_POSITION_Obj.rotation.z);
+                player.checkCollisions = true;
+                player.ellipsoid = new BABYLON.Vector3(0.3, 1, 0.3);
+                player.ellipsoidOffset = new BABYLON.Vector3(0, 1, 0);
+
+                //rotate the camera behind the player
+                var alpha = -player.rotation.y - 4.69;
+                var beta = Math.PI / 2.5;
+                var target = new BABYLON.Vector3(player.position.x, player.position.y + 1.85, player.position.z);
+
+                //console.log("laoding meshes 1.1");
+                var camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", alpha, beta, 5, target, scene);
+                camera.name = "FPC_Camera";
+                scene.activeCameras = [];
+
+                camera.minZ = 0.1;
+                camera.maxZ = 100000;
+
+
+                scene.activeCameras.push(camera);
+
+                //standard camera setting
+                camera.wheelPrecision = 15;
+                camera.checkCollisions = false;
+                //make sure the keyboard keys controlling camera are different from those controlling player
+                //here we will not use any keyboard keys to control camera
+                camera.keysLeft = [];
+                camera.keysRight = [];
+                camera.keysUp = [];
+                camera.keysDown = [];
+                //how close can the camera come to player
+                camera.lowerRadiusLimit = 0.1;
+                //how far can the camera go from the player
+                camera.upperRadiusLimit = 20;
+
+                camera.onViewMatrixChangedObservable.add(function () {
+                    if (camera.radius <= 1)
+                        camera.radius = 1;
+                });
+
+                camera.attachControl(canvas, true);
+
+                //console.log("laoding meshes 2");
+                //var CharacterController = org.ssatguru.BABYLONjs.component.CharacterController;
+                var cc = new CharacterController(player, camera, scene);
+                //below makes the controller point the camera at the player head which is approx
+                //1.5m above the player origin
+                cc.setCameraTarget(new BABYLON.Vector3(0, 1.6, 0));
+
+                //if the camera comes close to the player we want to enter first person mode.
+                cc.setNoFirstPerson(false);
+                //the height of steps which the player can climb
+                cc.setStepOffset(0.4);
+                //the minimum and maximum slope the player can go up
+                //between the two the player will start sliding down if it stops
+                cc.setSlopeLimit(30, 60);
+
+                //tell controller
+                // - which animation range should be used for which player animation
+                // - rate at which to play that animation range
+                // - wether the animation range should be looped
+                //use this if name, rate or looping is different from default
+                cc.setIdleAnim("idle", 1, true);
+                cc.setTurnLeftAnim("turnLeft", 0.5, true);
+                cc.setTurnRightAnim("turnRight", 0.5, true);
+                cc.setWalkBackAnim("walkBack", 0.5, true);
+                cc.setIdleJumpAnim("idleJump", .5, false);
+                cc.setRunJumpAnim("runJump", 0.6, false);
+                //set the animation range name to "null" to prevent the controller from playing
+                //a player animation.
+                //here even though we have an animation range called "fall" we donot want to play
+                //the fall animation
+                cc.setFallAnim("fall", 2, false);
+                cc.setSlideBackAnim("slideBack", 1, false);
+
+                cc.start();
+            });
+
+        }
+    </script>
+</body>
+
+</html>
