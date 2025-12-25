@@ -34,13 +34,13 @@
     <canvas id="renderCanvas"></canvas>
     <script>
         var modelsRoot = "example/BabylonJsV2/Scenes/";
-        var sceneName = "1_BoomBox";
+        var sceneName = "7_CAD_Heavy_Lifting_Tow_Truck";
         var canvas = document.getElementById("renderCanvas")
 
         loadScene.createScene(modelsRoot, sceneName, canvas, function (scene) {
             scene.executeWhenReady(() => {
                 scene.activeCamera.wheelPrecision = 1;
-                scene.activeCamera.panningSensibility = 10;
+                scene.activeCamera.panningSensibility = 100;
                 showDebugLayer(scene)
 
                 if (scene.getNodeByName("NavMesh") != null) {
