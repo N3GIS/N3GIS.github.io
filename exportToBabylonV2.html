@@ -231,20 +231,42 @@
 
 
                 var btLink = BABYLON.GUI.Button.CreateSimpleButton("but", "Export To Babylon.js (V2)");
-                btLink.width = "400px";
+                btLink.width = "600px";
                 btLink.height = "50px";
+                btLink.left = "-10px";
+                btLink.top = "30px";
                 btLink.textBlock.shadowOffsetX = 3
                 btLink.textBlock.shadowOffsetY = 3
-                btLink.fontSize = "28px";
+                btLink.fontSize = "38px";
                 btLink.fontWeight = "bolder"
                 btLink.color = "#409EFF";
                 btLink.thickness = 0;
                 btLink.hoverCursor = "pointer";
                 btLink.verticalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_TOP;
+                btLink.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
                 btLink.onPointerClickObservable.add(() => {
-                    window.open('https://assetstore.unity.com/packages/slug/201002');
+                    window.open('https://assetstore.unity.com/packages/slug/338212');
+                })
+
+                var btLink1 = BABYLON.GUI.Button.CreateSimpleButton("but", "CAD IMPORT ENTERPRISE");
+                btLink1.width = "600px";
+                btLink1.height = "50px";
+                btLink1.left = "600px";
+                btLink1.top = "30px";
+                btLink1.textBlock.shadowOffsetX = 3
+                btLink1.textBlock.shadowOffsetY = 3
+                btLink1.fontSize = "38px";
+                btLink1.fontWeight = "bolder"
+                btLink1.color = "#409EFF";
+                btLink1.thickness = 0;
+                btLink1.hoverCursor = "pointer";
+                btLink1.verticalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_TOP;
+                btLink1.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
+                btLink1.onPointerClickObservable.add(() => {
+                    window.open('https://fab.com/s/993d2954d930');
                 })
                 advancedTexture.addControl(btLink);
+                advancedTexture.addControl(btLink1);
                 panel.addControl(header);
             }
         });
