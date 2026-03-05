@@ -10,10 +10,10 @@ body { padding: 0; margin: 0; }
   display: none;
 }
 #unity-logo {
-  width: 154px;
-  height: 130px;
+  width: 420px;
+  height: 280px;
   margin: 0 auto;
-  background: #333 no-repeat center;
+   background: url('logo.jpg') no-repeat center
 }
 #unity-progress-bar-empty {
   width: 141px;
