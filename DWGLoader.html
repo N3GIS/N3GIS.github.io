@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes">
+    <title>Unity WebGL | DWG Loader</title>
+    <link rel="shortcut icon" href="/example/DWGLoader/TemplateData/favicon.ico">
+    <link rel="stylesheet" href="/example/DWGLoader/TemplateData/style.css">
+    <style>
+      /* Adaptive fullscreen — fills browser viewport on all devices */
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; overflow: hidden; }
+      #unity-container { position: fixed; left: 0; top: 0; width: 100%; height: 100%; }
+      #unity-canvas { width: 100% !important; height: 100% !important; display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-warning"></div>
+    </div>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+
+      function unityShowBanner(msg, type) {
+        var warningBanner = document.querySelector("#unity-warning");
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "/example/DWGLoader/Build";
+      var loaderUrl = buildUrl + "/WebGL.loader.js";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/WebGL.data.unityweb",
+        frameworkUrl: buildUrl + "/WebGL.framework.js.unityweb",
+        codeUrl: buildUrl + "/WebGL.wasm.unityweb",
+        streamingAssetsUrl: "/example/DWGLoader/StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "DWG Loader",
+        productVersion: "1.0.0",
+        showBanner: unityShowBanner,
+      };
+
+      // Match WebGL render target to the fullscreen canvas DOM size.
+      // config.matchWebGLToCanvasSize = false;
+      // config.devicePixelRatio = 1;
+
+      canvas.style.background = "#231F20";
+
+      document.querySelector("#unity-loading-bar").style.display = "block";
+
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+          var s = document.createElement("script");
+          s.src = src;
+          s.onload = function () { resolve(); };
+          s.onerror = function () { reject(new Error("Failed to load " + src)); };
+          document.body.appendChild(s);
+        });
+      }
+
+      // Takes the whole buffer rather than a 4-byte view, so the length check
+      // cannot be thrown off by the caller slicing it first.
+      function hasWasmMagic(buf) {
+        if (buf.byteLength < 4) return false;
+        var b = new Uint8Array(buf, 0, 4);
+        return b[0] === 0x00 && b[1] === 0x61 && b[2] === 0x73 && b[3] === 0x6d;
+      }
+
+      // StreamingAssets are served verbatim, so the wasm is shipped pre-gzipped
+      // (21 MB -> ~6 MB) and inflated here instead of relying on the host being
+      // configured to compress .wasm.
+      function fetchWasmBinary(base) {
+        return fetch(base + "dwg_native.wasm.gz", { credentials: "same-origin" })
+          .then(function (resp) {
+            if (!resp.ok) throw new Error("HTTP " + resp.status);
+            // Some hosts also apply Content-Encoding: gzip to .gz files, in which
+            // case the browser already inflated it and piping again would fail.
+            if (typeof DecompressionStream !== "function") return resp.arrayBuffer();
+            return resp.arrayBuffer().then(function (buf) {
+              if (hasWasmMagic(buf)) return buf;
+              var gz = new Blob([buf]).stream().pipeThrough(new DecompressionStream("gzip"));
+              return new Response(gz).arrayBuffer();
+            });
+          })
+          .then(function (buf) {
+            if (!hasWasmMagic(buf))
+              throw new Error("dwg_native.wasm.gz did not inflate to a wasm module");
+            return buf;
+          })
+          .catch(function (e) {
+            console.warn("[DWG] gzipped wasm unavailable (" + e.message + "), falling back to dwg_native.wasm");
+            return null;
+          });
+      }
+
+      // CAD native runtime is a separate wasm side-module (must NOT be statically
+      // linked into the Unity player — BootConfig OOB). Preload before createUnityInstance.
+      function loadDwgNativeModule(streamingAssetsUrl) {
+        var base = (streamingAssetsUrl || "StreamingAssets").replace(/\/$/, "") + "/DwgNative/";
+        return Promise.all([loadScript(base + "dwg_native.js"), fetchWasmBinary(base)]).then(function (r) {
+          if (typeof createDwgNativeModule !== "function")
+            return Promise.reject(new Error("createDwgNativeModule missing after dwg_native.js"));
+          var opts = { locateFile: function (path) { return base + path; } };
+          // Setting wasmBinary suppresses emscripten's own fetch of dwg_native.wasm,
+          // which is not shipped. A null binary leaves that fetch in place.
+          if (r[1]) opts.wasmBinary = r[1];
+          return createDwgNativeModule(opts);
+        }).then(function (mod) {
+          window.__dwgNativeRt = mod;
+          console.log("[DWG] native side-module ready");
+          return mod;
+        });
+      }
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = function () {
+        loadDwgNativeModule(config.streamingAssetsUrl).then(function () {
+          return createUnityInstance(canvas, config, function (progress) {
+            document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+          });
+        }).then(function (unityInstance) {
+          document.querySelector("#unity-loading-bar").style.display = "none";
+        }).catch(function (message) {
+          alert(message);
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
